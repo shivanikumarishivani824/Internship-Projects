@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Form Validation</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 350px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .error {
+            color: red;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .success {
+            color: green;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .invalid {
+            border-color: red;
+        }
+
+        .valid {
+            border-color: green;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Contact Form</h2>
+
+    <form id="contactForm">
+        
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="name">
+            <div class="error" id="nameError"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="text" id="email">
+            <div class="error" id="emailError"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Message</label>
+            <textarea id="message" rows="4"></textarea>
+            <div class="error" id="messageError"></div>
+        </div>
+
+        <button type="submit">Submit</button>
+
+        <div id="successMessage" class="success"></div>
+
+    </form>
+</div>
+
+<script>
+
+document.getElementById("contactForm").addEventListener("submit", function(event) {
+
+    event.preventDefault(); // Prevent form submission
+
+    let name = document.getElementById("name").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let message = document.getElementById("message").value.trim();
+
+    let nameError = document.getElementById("nameError");
+    let emailError = document.getElementById("emailError");
+    let messageError = document.getElementById("messageError");
+    let successMessage = document.getElementById("successMessage");
+
+    let isValid = true;
+
+    // Clear previous messages
+    nameError.textContent = "";
+    emailError.textContent = "";
+    messageError.textContent = "";
+    successMessage.textContent = "";
+
+    document.getElementById("name").classList.remove("invalid", "valid");
+    document.getElementById("email").classList.remove("invalid", "valid");
+    document.getElementById("message").classList.remove("invalid", "valid");
+
+    // Name Validation
+    if (name === "") {
+        nameError.textContent = "Name is required.";
+        document.getElementById("name").classList.add("invalid");
+        isValid = false;
+    } else {
+        document.getElementById("name").classList.add("valid");
+    }
+
+    // Email Validation using Regex
+    let emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+
+    if (email === "") {
+        emailError.textContent = "Email is required.";
+        document.getElementById("email").classList.add("invalid");
+        isValid = false;
+    } else if (!email.match(emailPattern)) {
+        emailError.textContent = "Enter a valid email address.";
+        document.getElementById("email").classList.add("invalid");
+        isValid = false;
+    } else {
+        document.getElementById("email").classList.add("valid");
+    }
+
+    // Message Validation
+    if (message === "") {
+        messageError.textContent = "Message cannot be empty.";
+        document.getElementById("message").classList.add("invalid");
+        isValid = false;
+    } else {
+        document.getElementById("message").classList.add("valid");
+    }
+
+    // If all valid
+    if (isValid) {
+        successMessage.textContent = "Form submitted successfully!";
+        document.getElementById("contactForm").reset();
+
+        document.getElementById("name").classList.remove("valid");
+        document.getElementById("email").classList.remove("valid");
+        document.getElementById("message").classList.remove("valid");
+    }
+
+});
+
+</script>
+
+</body>
+</html>
