@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task 7 - Fetch API User Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .btn-primary:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .status {
+            text-align: center;
+            color: white;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            min-height: 30px;
+        }
+
+        .loading {
+            color: #FFD700;
+        }
+
+        .error {
+            color: #FF6B6B;
+            background-color: rgba(255, 107, 107, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .user-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-id {
+            background-color: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .user-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .user-info label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .user-info p {
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 User Data Dashboard</h1>
+            <p>Fetching user information from JSONPlaceholder API</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="loadBtn">Load Users</button>
+            <button class="btn btn-primary" id="reloadBtn">Reload Data</button>
+        </div>
+
+        <div class="status" id="status"></div>
+        <div id="errorContainer"></div>
+        <div class="users-grid" id="usersContainer"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://jsonplaceholder.typicode.com/users';
+        const usersContainer = document.getElementById('usersContainer');
+        const statusDiv = document.getElementById('status');
+        const errorContainer = document.getElementById('errorContainer');
+        const loadBtn = document.getElementById('loadBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+
+        // Fetch users data from API
+        async function fetchUsers() {
+            try {
+                // Show loading status
+                statusDiv.textContent = '⏳ Loading user data...';
+                statusDiv.classList.add('loading');
+                errorContainer.innerHTML = '';
+                usersContainer.innerHTML = '';
+                loadBtn.disabled = true;
+                reloadBtn.disabled = true;
+
+                // Fetch data from API
+                const response = await fetch(API_URL);
+
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                // Parse JSON response
+                const users = await response.json();
+
+                // Check if we got users
+                if (!users || users.length === 0) {
+                    throw new Error('No users found in the response');
+                }
+
+                // Display users
+                displayUsers(users);
+                statusDiv.textContent = `✅ Successfully loaded ${users.length} users`;
+                statusDiv.classList.remove('loading');
+
+            } catch (error) {
+                handleError(error);
+            } finally {
+                loadBtn.disabled = false;
+                reloadBtn.disabled = false;
+            }
+        }
+
+        // Display users on the page
+        function displayUsers(users) {
+            usersContainer.innerHTML = '';
+
+            users.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+
+                // Extract address details
+                const address = user.address || {};
+                const fullAddress = `${address.street || 'N/A'}, ${address.city || 'N/A'}`;
+
+                userCard.innerHTML = `
+                    <div class="user-id">${user.id}</div>
+                    <div class="user-name">${user.name}</div>
+                    <div class="user-info">
+                        <p><label>Email:</label> ${user.email}</p>
+                        <p><label>Phone:</label> ${user.phone || 'N/A'}</p>
+                        <p><label>Website:</label> ${user.website || 'N/A'}</p>
+                        <p><label>Company:</label> ${user.company?.name || 'N/A'}</p>
+                        <p><label>Address:</label> ${fullAddress}</p>
+                    </div>
+                `;
+
+                usersContainer.appendChild(userCard);
+            });
+        }
+
+        // Handle errors
+        function handleError(error) {
+            console.error('Error:', error);
+            statusDiv.textContent = '❌ Error loading users';
+            statusDiv.classList.remove('loading');
+
+            let errorMessage = 'An error occurred while fetching data.';
+
+            if (error instanceof TypeError) {
+                errorMessage = '🌐 Network Error: Please check your internet connection.';
+            } else if (error instanceof SyntaxError) {
+                errorMessage = '⚠️ Error: Invalid JSON response from server.';
+            } else if (error.message.includes('HTTP Error')) {
+                errorMessage = `⚠️ ${error.message}`;
+            } else {
+                errorMessage = `⚠️ ${error.message}`;
+            }
+
+            errorContainer.innerHTML = `<div class="error">${errorMessage}</div>`;
+            usersContainer.innerHTML = '<div class="empty-state">No users to display</div>';
+        }
+
+        // Event listeners
+        loadBtn.addEventListener('click', fetchUsers);
+        reloadBtn.addEventListener('click', fetchUsers);
+
+        // Auto-load users when page loads
+        window.addEventListener('load', fetchUsers);
+    </script>
+</body>
+</html>
